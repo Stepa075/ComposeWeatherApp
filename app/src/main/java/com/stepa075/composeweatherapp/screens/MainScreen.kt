@@ -29,6 +29,8 @@ import com.stepa075.composeweatherapp.R
 import com.stepa075.composeweatherapp.data.WeatherModel
 import com.stepa075.composeweatherapp.ui.theme.BlueLight
 import kotlinx.coroutines.launch
+import org.json.JSONArray
+import org.json.JSONObject
 
 
 @Composable
@@ -73,7 +75,11 @@ fun MainCard(currentDay: MutableState<WeatherModel>) {
                     color = Color.White
                 )
                 Text(
-                    text = currentDay.value.currentTemp.toFloat().toInt().toString() + "°C",
+                    text = if(currentDay.value.currentTemp.isNotEmpty())
+                        currentDay.value.currentTemp.toFloat().toInt().toString() + "°C"
+                    else "${currentDay.value.maxTemp.toFloat().toInt()}°C /" +
+                            " ${currentDay.value.minTemp.toFloat().toInt()}°C"
+                    ,
                     style = TextStyle(fontSize = 64.sp),
                     color = Color.White
                 )
@@ -95,7 +101,9 @@ fun MainCard(currentDay: MutableState<WeatherModel>) {
 
                     }
                     Text(
-                        text = "${currentDay.value.maxTemp.toFloat().toInt()}°C / ${currentDay.value.minTemp.toFloat().toInt()}°C",
+                        text = "${
+                            currentDay.value.maxTemp.toFloat().toInt()
+                        }°C / ${currentDay.value.minTemp.toFloat().toInt()}°C",
                         style = TextStyle(fontSize = 15.sp),
                         color = Color.White
                     )
@@ -117,7 +125,7 @@ fun MainCard(currentDay: MutableState<WeatherModel>) {
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
-fun TabLayout(dayList: MutableState<List<WeatherModel>>) {
+fun TabLayout(dayList: MutableState<List<WeatherModel>>, currentDay: MutableState<WeatherModel>) {
     val tablist = listOf("HOURS", "DAYS")
     val pagerState = rememberPagerState()
     val tabIndex = pagerState.currentPage
@@ -154,17 +162,35 @@ fun TabLayout(dayList: MutableState<List<WeatherModel>>) {
             state = pagerState,
             modifier = Modifier.weight(1.0f)
         ) { index ->
-            LazyColumn(
-                modifier = Modifier.fillMaxSize()
-            ) {
-                itemsIndexed(
-                    dayList.value
-                ) { _, item ->
-                    ListItem(item)
-
-                }
+            val list = when(index) {
+                0 -> getWeatherBuHours(currentDay.value.hours)
+                1 -> dayList.value
+                else -> dayList.value
 
             }
+            MainList(list, currentDay)
         }
     }
+
+}
+
+private fun getWeatherBuHours(hours: String): List<WeatherModel> {
+    if (hours.isEmpty()) return listOf()
+    val hoursArray = JSONArray(hours)
+    val list = ArrayList<WeatherModel>()
+    for (i in 0 until hoursArray.length()) {
+        val item = hoursArray[i] as JSONObject
+        list.add(
+
+            WeatherModel(
+                "",
+                item.getString("time"),
+                item.getString("temp_c").toFloat().toInt().toString() + "°C",
+                item.getJSONObject("condition").getString("text"),
+                item.getJSONObject("condition").getString("icon"),
+                "", "",""
+            )
+        )
+    }
+    return list
 }
