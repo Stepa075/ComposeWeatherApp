@@ -34,7 +34,14 @@ class MainActivity : ComponentActivity() {
                 val dayList = remember{
                     mutableStateOf(listOf<WeatherModel>())
                 }
-                getData("London", this, dayList)
+
+                val currentDay = remember{
+                    mutableStateOf(WeatherModel(
+                        "","","0.0","","","0.0","0.0",""
+                    )
+                    )
+                }
+                getData("London", this, dayList, currentDay)
                 Image(
                     painter = painterResource(id = R.drawable.weather),
                     contentDescription = "im1",
@@ -44,7 +51,7 @@ class MainActivity : ComponentActivity() {
                     contentScale = ContentScale.FillBounds,
                 )
               Column {
-                  MainCard()
+                  MainCard(currentDay)
                   TabLayout(dayList)
               }
 
@@ -54,7 +61,9 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-private fun getData(city: String, context: Context, dayList: MutableState<List<WeatherModel>>){
+private fun getData(city: String, context: Context,
+                    dayList: MutableState<List<WeatherModel>>,
+                    currentDay: MutableState<WeatherModel>){
     val api = "38b27a1546ab4bb5a9364709232202"
     val url = "https://api.weatherapi.com/v1/forecast.json?key=$api&q=$city&days=3&aqi=no&alerts=no"
     val queue = Volley.newRequestQueue(context)
@@ -64,6 +73,7 @@ private fun getData(city: String, context: Context, dayList: MutableState<List<W
             response ->
             val list = getWeatherByDays(response)
             dayList.value = list
+            currentDay.value = list[0]
         },
         { Log.d("MyLog", "Error request: $it")}
 
@@ -96,6 +106,7 @@ private fun getWeatherByDays(response: String): List<WeatherModel>{
     list[0] = list[0].copy(
         time = mainObject.getJSONObject("current").getString("last_updated"),
         currentTemp = mainObject.getJSONObject("current").getString("temp_c")
+
     )
     return list
 }

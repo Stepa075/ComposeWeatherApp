@@ -30,9 +30,9 @@ import com.stepa075.composeweatherapp.data.WeatherModel
 import com.stepa075.composeweatherapp.ui.theme.BlueLight
 import kotlinx.coroutines.launch
 
-@Preview(showBackground = true)
+
 @Composable
-fun MainCard() {
+fun MainCard(currentDay: MutableState<WeatherModel>) {
 
     Column(
         modifier = Modifier
@@ -54,7 +54,7 @@ fun MainCard() {
                 ) {
                     Text(
                         modifier = Modifier.padding(start = 8.dp, top = 8.dp),
-                        text = "24 Mar 2023 12:00",
+                        text = currentDay.value.time,
                         style = TextStyle(fontSize = 15.sp),
                         color = Color.White
                     )
@@ -62,23 +62,23 @@ fun MainCard() {
                         modifier = Modifier
                             .size(35.dp)
                             .padding(top = 3.dp, end = 8.dp),
-                        model = "https://cdn.weatherapi.com/weather/64x64/day/353.png",
+                        model = "https:${currentDay.value.icon}",
                         contentDescription = "in2"
                     )
                 }
 
                 Text(
-                    text = "Kharkov",
+                    text = currentDay.value.city,
                     style = TextStyle(fontSize = 32.sp),
                     color = Color.White
                 )
                 Text(
-                    text = "23°C",
+                    text = currentDay.value.currentTemp.toFloat().toInt().toString() + "°C",
                     style = TextStyle(fontSize = 64.sp),
                     color = Color.White
                 )
                 Text(
-                    text = "Sunny",
+                    text = currentDay.value.condition,
                     style = TextStyle(fontSize = 15.sp),
                     color = Color.White
                 )
@@ -95,7 +95,7 @@ fun MainCard() {
 
                     }
                     Text(
-                        text = "23°C/12°C",
+                        text = "${currentDay.value.maxTemp.toFloat().toInt()}°C / ${currentDay.value.minTemp.toFloat().toInt()}°C",
                         style = TextStyle(fontSize = 15.sp),
                         color = Color.White
                     )
