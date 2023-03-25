@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -116,7 +117,7 @@ fun MainCard() {
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
-fun TabLayout() {
+fun TabLayout(dayList: MutableState<List<WeatherModel>>) {
     val tablist = listOf("HOURS", "DAYS")
     val pagerState = rememberPagerState()
     val tabIndex = pagerState.currentPage
@@ -157,28 +158,7 @@ fun TabLayout() {
                 modifier = Modifier.fillMaxSize()
             ) {
                 itemsIndexed(
-                    listOf(
-                        WeatherModel(
-                            "London",
-                            "10:00",
-                            "25°C",
-                            "Sunny",
-                            "//cdn.weatherapi.com/weather/64x64/day/116.png",
-                            "",
-                            "",
-                            ""
-                        ),
-                        WeatherModel(
-                            "London",
-                            "25.03.2023",
-                            "25°C",
-                            "Sunny",
-                            "//cdn.weatherapi.com/weather/64x64/day/116.png",
-                            "26°C",
-                            "12°C",
-                            "hjhkjhhkhkhkjh"
-                        )
-                    )
+                    dayList.value
                 ) { _, item ->
                     ListItem(item)
 
