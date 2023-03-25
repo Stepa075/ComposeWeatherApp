@@ -2,6 +2,8 @@ package com.stepa075.composeweatherapp.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
@@ -23,6 +25,7 @@ import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.pagerTabIndicatorOffset
 import com.google.accompanist.pager.rememberPagerState
 import com.stepa075.composeweatherapp.R
+import com.stepa075.composeweatherapp.data.WeatherModel
 import com.stepa075.composeweatherapp.ui.theme.BlueLight
 import kotlinx.coroutines.launch
 
@@ -126,10 +129,10 @@ fun TabLayout() {
     ) {
         TabRow(
             selectedTabIndex = tabIndex,
-            indicator = {pos ->
-                        TabRowDefaults.Indicator(
-                            Modifier.pagerTabIndicatorOffset(pagerState, pos)
-                        )
+            indicator = { pos ->
+                TabRowDefaults.Indicator(
+                    Modifier.pagerTabIndicatorOffset(pagerState, pos)
+                )
             },
             backgroundColor = BlueLight,
             contentColor = Color.White
@@ -137,20 +140,51 @@ fun TabLayout() {
             tablist.forEachIndexed { index, text ->
                 Tab(selected = false,
                     onClick = {
-                             coroutineScope.launch {
-                                 pagerState.animateScrollToPage(index)
-                             }
+                        coroutineScope.launch {
+                            pagerState.animateScrollToPage(index)
+                        }
                     },
-                    text = {Text(text = text)}
+                    text = { Text(text = text) }
                 )
             }
         }
-        HorizontalPager(count = tablist.size,
+        HorizontalPager(
+            count = tablist.size,
             state = pagerState,
             modifier = Modifier.weight(1.0f)
+        ) { index ->
+            LazyColumn(
+                modifier = Modifier.fillMaxSize()
             ) {
-                index ->
+                itemsIndexed(
+                    listOf(
+                        WeatherModel(
+                            "London",
+                            "10:00",
+                            "25°C",
+                            "Sunny",
+                            "//cdn.weatherapi.com/weather/64x64/day/116.png",
+                            "",
+                            "",
+                            ""
+                        ),
+                        WeatherModel(
+                            "London",
+                            "25.03.2023",
+                            "25°C",
+                            "Sunny",
+                            "//cdn.weatherapi.com/weather/64x64/day/116.png",
+                            "26°C",
+                            "12°C",
+                            "hjhkjhhkhkhkjh"
+                        )
+                    )
+                ) { _, item ->
+                    ListItem(item)
 
+                }
+
+            }
         }
     }
 }
