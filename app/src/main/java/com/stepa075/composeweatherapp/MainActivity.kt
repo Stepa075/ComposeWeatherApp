@@ -19,6 +19,7 @@ import com.android.volley.Request
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
 import com.stepa075.composeweatherapp.data.WeatherModel
+import com.stepa075.composeweatherapp.screens.DialogSearch
 import com.stepa075.composeweatherapp.screens.MainCard
 
 import com.stepa075.composeweatherapp.screens.TabLayout
@@ -31,16 +32,28 @@ class MainActivity : ComponentActivity() {
         setContent {
             ComposeWeatherAppTheme {
 
-                val dayList = remember{
+                val dayList = remember {
                     mutableStateOf(listOf<WeatherModel>())
                 }
 
-                val currentDay = remember{
-                    mutableStateOf(WeatherModel(
-                        "","","0.0","","","0.0","0.0",""
-                    )
+                val currentDay = remember {
+                    mutableStateOf(
+                        WeatherModel(
+                            "", "", "0.0", "", "", "0.0", "0.0", ""
+                        )
                     )
                 }
+
+                val dialogState = remember {
+                    mutableStateOf(false)
+                }
+                if (dialogState.value) {
+                    DialogSearch(dialogState, onSubmit = {
+                        getData(it, this, dayList, currentDay)
+                    })
+                }
+
+
                 getData("London", this, dayList, currentDay)
                 Image(
                     painter = painterResource(id = R.drawable.weather),
@@ -50,10 +63,15 @@ class MainActivity : ComponentActivity() {
                         .alpha(0.5f),
                     contentScale = ContentScale.FillBounds,
                 )
-              Column {
-                  MainCard(currentDay)
-                  TabLayout(dayList, currentDay)
-              }
+                Column {
+                    MainCard(currentDay, onClickSync = {
+                        getData("London", this@MainActivity, dayList, currentDay)
+                    }, onClickSearch = {
+                        dialogState.value = true
+                    }
+                    )
+                    TabLayout(dayList, currentDay)
+                }
 
 
             }
@@ -61,34 +79,35 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-private fun getData(city: String, context: Context,
-                    dayList: MutableState<List<WeatherModel>>,
-                    currentDay: MutableState<WeatherModel>){
+private fun getData(
+    city: String, context: Context,
+    dayList: MutableState<List<WeatherModel>>,
+    currentDay: MutableState<WeatherModel>
+) {
     val api = "38b27a1546ab4bb5a9364709232202"
     val url = "https://api.weatherapi.com/v1/forecast.json?key=$api&q=$city&days=3&aqi=no&alerts=no"
     val queue = Volley.newRequestQueue(context)
     val sRequest = StringRequest(
         Request.Method.GET,
-        url,{
-            response ->
+        url, { response ->
             val list = getWeatherByDays(response)
             dayList.value = list
             currentDay.value = list[0]
         },
-        { Log.d("MyLog", "Error request: $it")}
+        { Log.d("MyLog", "Error request: $it") }
 
     )
     queue.add(sRequest)
 }
 
-private fun getWeatherByDays(response: String): List<WeatherModel>{
-    if(response.isEmpty()) return listOf()
+private fun getWeatherByDays(response: String): List<WeatherModel> {
+    if (response.isEmpty()) return listOf()
     val list = ArrayList<WeatherModel>()
     val mainObject = JSONObject(response)
     val city = mainObject.getJSONObject("location").getString("name")
     val days = mainObject.getJSONObject("forecast").getJSONArray("forecastday")
 
-    for(i in 0 until days.length()){
+    for (i in 0 until days.length()) {
         val item = days[i] as JSONObject
         list.add(
             WeatherModel(
